@@ -14,7 +14,7 @@ const moment = require('moment');
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(session({ secret: process.env.SESSION_SECRET }));
+app.use(session({ secret: process.env.SESSION_SECRET, saveUninitialized: true, resave: false }));
 
 // const cryptr = new Cryptr(process.env.ENCRYPT_SECRET);
 
