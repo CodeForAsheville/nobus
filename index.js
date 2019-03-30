@@ -8,19 +8,12 @@ const bodyParser = require('body-parser');
 
 const mysql = require('promise-mysql');
 const moment = require('moment');
-
-const Cryptr = require('cryptr');
+const crypto = require('crypto');
 
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(session({ secret: process.env.SESSION_SECRET, saveUninitialized: true, resave: false }));
-
-const cryptr = new Cryptr(process.env.ENCRYPT_SECRET);
-
-function isNumeric(n) {
-  return !isNaN(parseFloat(n)) && isFinite(n);
-}
 
 const pool = mysql
   .createPool({
@@ -42,7 +35,25 @@ const pool = mysql
   // });
 
 
-const loadResponseIntoDatabase = function (datetime, type, route, stop, phone_hash, phone_city, phone_state, phone_zip, followup) {
+function encrypt(string) {
+  const cipher = crypto.createCipher('aes-256-cbc', process.env.ENCRYPT_SECRET);
+  let crypted = cipher.update(string, 'utf8', 'hex');
+  crypted += cipher.final('hex');
+  return crypted;
+}
+
+function decrypt(string) {
+  const decipher = crypto.createDecipher('aes-256-cbc', process.env.ENCRYPT_SECRET);
+  let dec = decipher.update(string, 'hex', 'utf8');
+  dec += decipher.final('utf8');
+  return dec;
+}
+
+function isNumeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+function loadResponseIntoDatabase(datetime, type, route, stop, phone_hash, phone_city, phone_state, phone_zip, followup) {
   const datetime_for_sql = moment.utc(datetime).format('YYYY-MM-DD HH:mm:ss');
 
   const sql = `
@@ -64,7 +75,7 @@ const loadResponseIntoDatabase = function (datetime, type, route, stop, phone_ha
     .catch((error) => {
       console.log(error);
     });
-};
+}
 
 
 app.get('/healthcheck', async (req, res) => {
@@ -94,7 +105,7 @@ app.post('/', (req, res) => {
       message = 'Thank you for letting us know! Is your bus late, did you see it arrive and leave early, or did it just pass you by? Please reply with LATE, EARLY, or PASS.';
       req.session.step = 1;
       req.session.start_time = moment();
-      req.session.phone_hash = cryptr.encrypt(req.body.From);
+      req.session.phone_hash = encrypt(req.body.From);
       req.session.phone_city = req.body.FromCity;
       req.session.phone_state = req.body.FromState;
       req.session.phone_zip = req.body.FromZip;
