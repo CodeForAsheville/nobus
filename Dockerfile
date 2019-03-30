@@ -1,4 +1,4 @@
-FROM node:10-alpine
+FROM node:8
 MAINTAINER patrick@prcapps.com
 
 # Create app directory
@@ -11,7 +11,7 @@ COPY package*.json ./
 
 RUN npm install
 # If you are building your code for production
-#RUN npm install --only=production
+# RUN npm install --only=production
 
 # Bundle app source
 COPY . .
