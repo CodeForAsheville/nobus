@@ -12,7 +12,7 @@ const moment = require('moment');
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(session({ secret: '$asdfl;kjas43asdfggcxbverwerF%;fkasdfl' }));
+app.use(session({ secret: SESSION_SECRET }));
 
 function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
@@ -21,10 +21,10 @@ function isNumeric(n) {
 
 const pool = mysql
   .createPool({
-    host: process.env.host,
-    user: process.env.user,
-    password: process.env.password,
-    database: process.env.database,
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
     timezone: 'utc', // <-here this line was missing,
     connectionLimit: 10,
   });
