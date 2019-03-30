@@ -68,6 +68,12 @@ const loadResponseIntoDatabase = function (datetime, type, route, stop, phone_ha
 
 // loadResponseIntoDatabase(moment(), 'LATE', 'W1', 123, 0);
 
+
+app.get('/healthcheck', async (req, res) => {
+  res.send('All Good');
+});
+
+
 app.post('/', (req, res) => {
   const smsCount = req.session.counter || 0;
   const lastMessage = req.session.lastMessage || '';
