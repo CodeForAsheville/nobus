@@ -12,12 +12,11 @@ const moment = require('moment');
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(session({ secret: SESSION_SECRET }));
+app.use(session({ secret: process.env.SESSION_SECRET }));
 
 function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
-
 
 const pool = mysql
   .createPool({
