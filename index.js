@@ -16,7 +16,7 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(session({ secret: process.env.SESSION_SECRET }));
 
-const cryptr = new Cryptr(process.env.ENCRYPT_SECRET);
+// const cryptr = new Cryptr(process.env.ENCRYPT_SECRET);
 
 function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
