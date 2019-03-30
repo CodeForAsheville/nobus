@@ -73,6 +73,10 @@ app.get('/healthcheck', async (req, res) => {
   res.send('All Good');
 });
 
+app.get('/', async (req, res) => {
+  res.send('All Good');
+});
+
 
 app.post('/', (req, res) => {
   const smsCount = req.session.counter || 0;
