@@ -9,10 +9,14 @@ const bodyParser = require('body-parser');
 const mysql = require('promise-mysql');
 const moment = require('moment');
 
+const Cryptr = require('cryptr');
+
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(session({ secret: process.env.SESSION_SECRET }));
+
+const cryptr = new Cryptr(process.env.ENCRYPT_SECRET);
 
 function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
@@ -38,15 +42,14 @@ const pool = mysql
   // });
 
 
-const loadResponseIntoDatabase = function (datetime, type, route, stop, followup) {
+const loadResponseIntoDatabase = function (datetime, type, route, stop, phone_hash, phone_city, phone_state, phone_zip, followup) {
   const datetime_for_sql = moment.utc(datetime).format('YYYY-MM-DD HH:mm:ss');
 
   const sql = `
-    INSERT INTO busalert_user_response (datetime, type, route, stop, followup) 
-    VALUES ('${datetime_for_sql}', '${type}', '${route}', ${stop}, ${followup} )
+    INSERT INTO busalert_user_response (datetime, type, route, stop, phone_hash, phone_city, phone_state, phone_zip, followup) 
+    VALUES ('${datetime_for_sql}', '${type}', '${route}', ${stop}, '${phone_hash}', '${phone_city}', '${phone_state}', '${phone_zip}', ${followup} )
   `;
   console.log(sql);
-
 
   return pool
     .query(sql)
@@ -76,7 +79,6 @@ app.post('/', (req, res) => {
   const twiml = new MessagingResponse();
 
   console.log('message received', req.body);
-
   console.log('current session', req.session);
 
   if (step === 0) {
@@ -85,6 +87,10 @@ app.post('/', (req, res) => {
       message = 'Thank you for letting us know! Is your bus late, did you see it arrive and leave early, or did it just pass you by? Please reply with LATE, EARLY, or PASS.';
       req.session.step = 1;
       req.session.start_time = moment();
+      req.session.phone_hash = cryptr.encrypt(req.body.From);
+      req.session.phone_city = req.body.FromCity;
+      req.session.phone_state = req.body.FromState;
+      req.session.phone_zip = req.body.FromZip;
     } else {
       message = 'I did not understand that response. Please text NOBUS to get started.';
     }
@@ -119,7 +125,18 @@ app.post('/', (req, res) => {
       message = "Thank you! We'll use your replies to help hold the bus company accountable for better service. For more information, please check the Better Buses Together group on Facebook.\n\n https://www.facebook.com/groups/130601857706447/";
       req.session.route = req.body.Body;
       req.session.step = 0;
-      loadResponseIntoDatabase(req.session.start_time, req.session.type, req.session.route, req.session.stop, 0);
+
+      loadResponseIntoDatabase(
+        req.session.start_time,
+        req.session.type,
+        req.session.route,
+        req.session.stop,
+        req.session.phone_hash,
+        req.session.phone_city,
+        req.session.phone_state,
+        req.session.phone_zip,
+        0,
+      );
     } else {
       message = "I'm sorry, I didn't understand that response.\n\n What bus route were you trying to take?";
     }
