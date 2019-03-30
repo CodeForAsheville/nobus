@@ -1,2 +1,4 @@
 yarn-error.log
 gke.yml
+.env
+node_modules
