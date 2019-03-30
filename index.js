@@ -9,11 +9,9 @@ const bodyParser = require('body-parser');
 const mysql = require('promise-mysql');
 const moment = require('moment');
 
-const Cryptr = require('cryptr');
+// const Cryptr = require('cryptr');
 
 const app = express();
-
-console.log('ENV', process.env);
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(session({ secret: process.env.SESSION_SECRET }));
@@ -89,7 +87,7 @@ app.post('/', (req, res) => {
       message = 'Thank you for letting us know! Is your bus late, did you see it arrive and leave early, or did it just pass you by? Please reply with LATE, EARLY, or PASS.';
       req.session.step = 1;
       req.session.start_time = moment();
-      req.session.phone_hash = cryptr.encrypt(req.body.From);
+      req.session.phone_hash = '';// cryptr.encrypt(req.body.From);
       req.session.phone_city = req.body.FromCity;
       req.session.phone_state = req.body.FromState;
       req.session.phone_zip = req.body.FromZip;
